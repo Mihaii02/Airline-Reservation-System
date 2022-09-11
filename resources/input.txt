@@ -11,3 +11,14 @@ ADD_FLIGHT 102
 ADD_FLIGHT 103
 DELETE_FLIGHT 102
 DISPLAY_MY_FLIGHTS
+DELETE_USER mihai@yahoo.com
+DISPLAY_MY_FLIGHTS
+LOGIN mihai@yahoo.com root12345
+SIGNUP vlad@yahoo.com Mihai root12345 root12345
+LOGIN vlad@yahoo.com root12345
+ADD_FLIGHT 102
+ADD_FLIGHT 103
+LOGOUT vlad@yahoo.com
+DELETE_USER vlad@yahoo.com
+LOGIN vlad@yahoo.com root12345
+DISPLAY_MY_FLIGHTS

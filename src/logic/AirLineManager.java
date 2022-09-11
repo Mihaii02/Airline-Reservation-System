@@ -235,29 +235,33 @@ public class AirLineManager {
         }
     }
 
+    //Display all flights
     public void displayFlights(String[] comenzi) {
         allFlights
                 .forEach(flight -> writer.write(flight.toString().replace("{", "").replace("}", "")));
     }
 
+    //Delete a user for allUsers
+    //check if user exists in allUsers
+    //remove user from allUsers
     public void deleteUser(String[] comenzi) {
         String email = comenzi[1];
-        boolean userExists = allUsers.stream()
-                .anyMatch(user -> user.getEmail().equals(email));
-        if(!userExists){
+
+        Optional<User> findUser = allUsers.stream()
+                .filter(user -> user.getEmail().equals(email))
+                .findFirst();
+
+        if(findUser.isEmpty()){
             writer.write(Messages.getUserDoesntExist(email));
             return;
         }
-        Iterator<User> iterator = allUsers.iterator();
-        while(iterator.hasNext()){
-            User user = iterator.next();
-            if(user.getEmail().equals(email)){
-                iterator.remove();
-                writer.write(Messages.getUserDeleted(email));
-            }
-        }
+
+        allUsers.remove(findUser.get());
+        writer.write(Messages.getUserRemoved(email));
+        currentUser=null;
     }
 
+    //Add users to a database SQL
     public void persistUser(String[] comenzi) {
 
         try (Connection connection = DriverManager.getConnection(JDBC_URLU, USER, PASSWORD);
@@ -275,6 +279,7 @@ public class AirLineManager {
         }
     }
 
+    //Add flights to a database SQL
     public void persistFlights(String[] comenzi) {
         try (Connection connection = DriverManager.getConnection(JDBC_URLF, USER, PASSWORD);
              Statement statement = connection.createStatement()) {

@@ -127,8 +127,8 @@ public class Messages {
         return "User with emial " + email+ " does not exist!";
     }
 
-    public static String getUserDeleted(String email) {
-        return "User with email " + email + " was successfully deleted!";
+    public static String getUserRemoved(String email) {
+        return "User with email " + email + " have been removed!";
     }
 }
 
