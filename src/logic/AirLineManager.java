@@ -36,7 +36,7 @@ public class AirLineManager {
         String password = comenzi[3];
         String confirmationPassword = comenzi[4];
 
-
+        //check for user in allUsers
         boolean userAlreadyExists = allUsers.stream()
                 .anyMatch(user -> user.getEmail().equals(email));
         if(userAlreadyExists){
@@ -53,6 +53,7 @@ public class AirLineManager {
             writer.write(Messages.getPasswordsDontMatch());
             return;
         }
+        //add user to allUsers
         User user = new User(email, name, password);
         allUsers.add(user);
         writer.write(Messages.getUserAdded(user));
@@ -66,6 +67,7 @@ public class AirLineManager {
         String email = comenzi[1];
         String password = comenzi[2];
 
+        //find user in allUsers with matching email
         Optional<User> userOptional = allUsers.stream()
                 .filter(user -> user.getEmail().equals(email))
                 .findFirst();
@@ -97,6 +99,7 @@ public class AirLineManager {
             return;
         }
         writer.write(Messages.getUserDisconnected(currentUser.getEmail(), formattedDate));
+        //currentUser will be disconnected
         currentUser = null;
     }
 
@@ -112,13 +115,14 @@ public class AirLineManager {
         LocalDate date = LocalDate.parse(dateAsString, dateTimeFormatter);
         int duration = Integer.parseInt(comenzi[5]);
 
+        //check if there is a flight in allFlights matching flight id
         boolean sameFlight = allFlights.stream()
                 .anyMatch(flight -> flight.getId() == id);
         if (sameFlight) {
             writer.write(Messages.getFlightAlreadyExists(id));
             return;
         }
-
+        //add new flight to allFlights
         Flights flight = new Flights(id, from, to, date, duration);
         allFlights.add(flight);
         writer.write(Messages.getFlightAdded(from, to, date, duration));
@@ -137,6 +141,7 @@ public class AirLineManager {
             writer.write(Messages.getUserNotConnected());
             return;
         }
+        //find the flight from allFlights matching the flightId
         Optional<Flights> flightsOptional = allFlights.stream()
                 .filter(flight -> flight.getId() == flightId)
                 .findFirst();
@@ -145,13 +150,15 @@ public class AirLineManager {
             return;
         }
 
-        boolean userAreDejaBilet = currentUser.getUserFlights().stream()
+        //check if user has a ticket for flight with given flightId
+        boolean userAlreadyHaveTicket = currentUser.getUserFlights().stream()
                 .anyMatch(flights -> flights.getId() == flightId);
 
-        if (userAreDejaBilet) {
+        if (userAlreadyHaveTicket) {
             writer.write(Messages.getUserAlreadyHaveTicket(flightId, currentUser.getEmail()));
             return;
         }
+        //add flight to userFlights
         currentUser.addFlight(flightsOptional.get());
         writer.write(Messages.getTicketPurchased(flightId, currentUser.getEmail()));
     }
@@ -164,12 +171,14 @@ public class AirLineManager {
             writer.write(Messages.getUserNotConnected());
             return;
         }
+        //check if currentUser has any flights
         Optional<Flights> test = currentUser.getUserFlights().stream()
                 .findFirst();
         if (test.isEmpty()) {
             writer.write(Messages.getUserHasNoFLights(currentUser.getEmail()));
             return;
         }
+        //display currentUser flights
         currentUser.getUserFlights()
                 .forEach(flight -> writer.write(flight.toString()));
     }
@@ -186,6 +195,7 @@ public class AirLineManager {
             writer.write(Messages.getUserNotConnected());
             return;
         }
+        //check for flights with flightId matching id
         Optional<Flights> findFlight = allFlights.stream()
                 .filter(flights -> flights.getId() == id)
                 .findFirst();
@@ -193,6 +203,8 @@ public class AirLineManager {
             writer.write(Messages.getNoSuchFlights(id));
             return;
         }
+
+        //check if current user has a ticket for the given flight
         boolean ticketMatch = currentUser.getUserFlights().stream()
                 .anyMatch(flight -> flight.getId() == id);
 
@@ -201,6 +213,7 @@ public class AirLineManager {
             return;
         }
 
+        //delete the flight form current user's flights
         currentUser.deleteUserFlight(findFlight.get());
         writer.write(Messages.getFlightCanceled(currentUser.getEmail(), id));
     }
@@ -213,6 +226,7 @@ public class AirLineManager {
     public void deleteFlight(String[] comenzi) {
         int flightId = Integer.parseInt(comenzi[1]);
 
+        //verify if there is a flight in allFlights matching the flightId sent as parameter
         Optional<Flights> verifyFlight = allFlights.stream()
                 .filter(flights -> flights.getId() == flightId)
                 .findFirst();
@@ -222,9 +236,11 @@ public class AirLineManager {
             return;
         }
 
+        //remove the flight
         allFlights.remove(verifyFlight.get());
         writer.write(Messages.getFlightDeleted(flightId));
 
+        //remove the flight from userFlights and notify the user
         for (User user : allUsers) {
             boolean hasATicket = user.getUserFlights().stream()
                     .anyMatch(flights -> flights.getId() == flightId);
@@ -247,6 +263,7 @@ public class AirLineManager {
     public void deleteUser(String[] comenzi) {
         String email = comenzi[1];
 
+        //find the user matching the email
         Optional<User> findUser = allUsers.stream()
                 .filter(user -> user.getEmail().equals(email))
                 .findFirst();
@@ -256,6 +273,7 @@ public class AirLineManager {
             return;
         }
 
+        //remove the user from allUsers and make current user null
         allUsers.remove(findUser.get());
         writer.write(Messages.getUserRemoved(email));
         currentUser=null;
