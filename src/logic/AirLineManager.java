@@ -36,12 +36,6 @@ public class AirLineManager {
         String password = comenzi[3];
         String confirmationPassword = comenzi[4];
 
-        /*for (User user : allUsers) {
-            if (user.getEmail().equals(email)) {
-                writer.write(Mesaje.getUserAlreadyExist());
-                return;
-            }
-        }*/
 
         boolean userAlreadyExists = allUsers.stream()
                 .anyMatch(user -> user.getEmail().equals(email));
