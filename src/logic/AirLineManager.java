@@ -124,12 +124,7 @@ public class AirLineManager {
             writer.write(Messages.getFlightAlreadyExists(id));
             return;
         }
-        /*for (Flights flight : allFlights) {
-            if (flight.getId() == id) {
-                writer.write(Mesaje.getFlightAlreadyExists(id));
-                return;
-            }
-        }*/
+
         Flights flight = new Flights(id, from, to, date, duration);
         allFlights.add(flight);
         writer.write(Messages.getFlightAdded(from, to, date, duration));
