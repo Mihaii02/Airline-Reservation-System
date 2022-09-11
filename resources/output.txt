@@ -1,0 +1,14 @@
+User with email mihai@yahoo.com was successfully added!
+User with email mihai@yahoo.com is the current user started from 2022-09-11 22:46:35.
+User with email mihai@yahoo.com has no flights!
+Flight from Buc to Cluj ,date 2021-12-11 , duration 260 successfully added!
+Flight from Buc to Viena ,date 2021-12-11 , duration 280 successfully added!
+Flight from Buc to Paris ,date 2021-12-11 , duration 280 successfully added!
+The flight with id 101 was successfully added for user with email mihai@yahoo.com!
+{Flight from Buc to Cluj , date 2021-12-11 , duration 260.}
+The user with email mihai@yahoo.com has successfully canceled his ticket for flight with id 101!
+The flight with id 102 was successfully added for user with email mihai@yahoo.com!
+The flight with id 103 was successfully added for user with email mihai@yahoo.com!
+Flight with id 102 successfully deleted!
+The user with email mihai@yahoo.com was notified that the flight with id 102 was canceled!
+{Flight from Buc to Paris , date 2021-12-11 , duration 280.}

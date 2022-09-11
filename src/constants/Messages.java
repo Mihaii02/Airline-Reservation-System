@@ -8,7 +8,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
-public class Mesaje {
+public class Messages {
 
     public static String getUserAdded(User user){
         return "User with email " + user.getEmail() + " was successfully added!";

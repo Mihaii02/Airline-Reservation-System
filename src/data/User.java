@@ -1,12 +1,8 @@
 package data;
 
-import constants.Mesaje;
-import logic.AirLineManager;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class User {
 
@@ -55,11 +51,11 @@ public class User {
         userFlights.add(flights);
     }
 
-    public void deleteFlight(List<Flights> userFlights) {
-        userFlights.remove(getUserFlights().get(id));
+    public void deleteUserFlight(Flights flight) {
+        userFlights.remove(flight);
     }
 
-    public void deleteUserFligth(int flightId) {
+   /* public void deleteUserFligth(int flightId) {
         userFlights.remove(flightId);
         Iterator<Flights> iterator = userFlights.iterator();
         while (iterator.hasNext()) {
@@ -69,7 +65,7 @@ public class User {
 
         }
     }
-}
+}*/
 
 
 

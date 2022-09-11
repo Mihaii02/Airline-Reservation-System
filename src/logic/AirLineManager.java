@@ -1,6 +1,6 @@
 package logic;
 
-import constants.Mesaje;
+import constants.Messages;
 import data.Flights;
 import data.User;
 
@@ -9,7 +9,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class AirLineManager {
     private static final String JDBC_URLU = "jdbc:mysql://localhost:3306/users";
@@ -25,71 +24,90 @@ public class AirLineManager {
     LocalDateTime myDateObj = LocalDateTime.now();
     DateTimeFormatter myDateTime = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
     String formattedDate = myDateObj.format(myDateTime);
-//signup is valid if:
-// -user doesn't have an account already;
-// -password's length is higher than 8 characters
-// -password matches confirmation_password
+
+    //signup is valid if:
+    // -user doesn't have an account already;
+    // -password is at least 8 characters long
+    // -password matches confirmation_password
     public void signUp(String[] comenzi) {
 
         String email = comenzi[1];
-        String nume = comenzi[2];
-        String parola = comenzi[3];
-        String parola_confirmare = comenzi[4];
+        String name = comenzi[2];
+        String password = comenzi[3];
+        String confirmationPassword = comenzi[4];
 
-        for (User user : allUsers) {
+        /*for (User user : allUsers) {
             if (user.getEmail().equals(email)) {
                 writer.write(Mesaje.getUserAlreadyExist());
                 return;
             }
-        }
-        if (parola.length() < 8) {
-            writer.write(Mesaje.getPasswordIsTooShort());
+        }*/
+
+        boolean userAlreadyExists = allUsers.stream()
+                .anyMatch(user -> user.getEmail().equals(email));
+        if(userAlreadyExists){
+            writer.write(Messages.getUserAlreadyExist());
             return;
         }
-        if (!parola.equals(parola_confirmare)) {
-            writer.write(Mesaje.getPasswordsDontMatch());
+
+        if (password.length() < 8) {
+            writer.write(Messages.getPasswordIsTooShort());
             return;
         }
-        User user = new User(email, nume, parola);
+
+        if (!password.equals(confirmationPassword)) {
+            writer.write(Messages.getPasswordsDontMatch());
+            return;
+        }
+        User user = new User(email, name, password);
         allUsers.add(user);
-        writer.write(Mesaje.getUserAdded(user));
+        writer.write(Messages.getUserAdded(user));
     }
 
+    //Login is valid if: -user has signed up
+    //- password matches the password sent in parameters
+    //- current user is not null
+    //if it passes the verification, user will be the current user
     public void login(String[] comenzi) {
         String email = comenzi[1];
-        String parola = comenzi[2];
+        String password = comenzi[2];
 
         Optional<User> userOptional = allUsers.stream()
                 .filter(user -> user.getEmail().equals(email))
                 .findFirst();
         if (userOptional.isEmpty()) {
-            writer.write(Mesaje.getCannotFindUser(email));
+            writer.write(Messages.getCannotFindUser(email));
             return;
         }
         User user = userOptional.get();
-        if (!user.getPassword().equals(parola)) {
-            writer.write(Mesaje.getIncorrectPassword(parola));
+        if (!user.getPassword().equals(password)) {
+            writer.write(Messages.getIncorrectPassword(password));
             return;
         }
+
         if (currentUser != null) {
-            writer.write(Mesaje.getAnotherUserIsConnected());
+            writer.write(Messages.getAnotherUserIsConnected());
             return;
         }
         currentUser = user;
-        writer.write(Mesaje.getLogInSuccessfully(email, formattedDate));
+        writer.write(Messages.getLogInSuccessfully(email, formattedDate));
 
     }
 
+    // Logout is valid if email of current user matches the email sent as parameter
     public void logOut(String[] comenzi) {
         String email = comenzi[1];
+
         if (!currentUser.getEmail().equals(email)) {
-            writer.write(Mesaje.getUserNotConnected(email));
+            writer.write(Messages.getUserNotConnected(email));
             return;
         }
-        writer.write(Mesaje.getUserDisconnected(currentUser.getEmail(), formattedDate));
+        writer.write(Messages.getUserDisconnected(currentUser.getEmail(), formattedDate));
         currentUser = null;
     }
 
+    // Add flight if flight id sent as parameter doesn't match with any flight from allFlights
+    //otherwise add new flight
     public void addFlightDetails(String[] comenzi) {
 
         int id = Integer.parseInt(comenzi[1]);
@@ -103,7 +121,7 @@ public class AirLineManager {
         boolean sameFlight = allFlights.stream()
                 .anyMatch(flight -> flight.getId() == id);
         if (sameFlight) {
-            writer.write(Mesaje.getFlightAlreadyExists(id));
+            writer.write(Messages.getFlightAlreadyExists(id));
             return;
         }
         /*for (Flights flight : allFlights) {
@@ -114,21 +132,27 @@ public class AirLineManager {
         }*/
         Flights flight = new Flights(id, from, to, date, duration);
         allFlights.add(flight);
-        writer.write(Mesaje.getFlightAdded(from, to, date, duration));
+        writer.write(Messages.getFlightAdded(from, to, date, duration));
     }
 
+    //Add fights to users
+    //Adding is valid if:
+    //currentUser is not null
+    //flight with flight id exists in allFlights
+    //currentUser already have a ticket for the flight sent as parameter
+    //otherwise, flight will be added to userFlights
     public void addUserFlight(String[] comenzi) {
 
         int flightId = Integer.parseInt(comenzi[1]);
         if (currentUser == null) {
-            writer.write(Mesaje.getUserNotConnected());
+            writer.write(Messages.getUserNotConnected());
             return;
         }
         Optional<Flights> flightsOptional = allFlights.stream()
                 .filter(flight -> flight.getId() == flightId)
                 .findFirst();
         if (flightsOptional.isEmpty()) {
-            writer.write(Mesaje.getFlightDoesNotExist(flightId));
+            writer.write(Messages.getFlightDoesNotExist(flightId));
             return;
         }
 
@@ -136,79 +160,90 @@ public class AirLineManager {
                 .anyMatch(flights -> flights.getId() == flightId);
 
         if (userAreDejaBilet) {
-            writer.write(Mesaje.getUserAlreadyHaveTicket(flightId, currentUser.getEmail()));
+            writer.write(Messages.getUserAlreadyHaveTicket(flightId, currentUser.getEmail()));
             return;
         }
         currentUser.addFlight(flightsOptional.get());
-        writer.write(Mesaje.getTicketPurchased(flightId, currentUser.getEmail()));
+        writer.write(Messages.getTicketPurchased(flightId, currentUser.getEmail()));
     }
 
+    //Display all currentUser flights
+    //Display is valid if :
+    //currentUser is not null
     public void displayMyFlights(String[] comenzi) {
         if (currentUser == null) {
-            writer.write(Mesaje.getUserNotConnected());
+            writer.write(Messages.getUserNotConnected());
             return;
         }
         Optional<Flights> test = currentUser.getUserFlights().stream()
                 .findFirst();
         if (test.isEmpty()) {
-            writer.write(Mesaje.getUserHasNoFLights(currentUser.getEmail()));
+            writer.write(Messages.getUserHasNoFLights(currentUser.getEmail()));
             return;
         }
-        currentUser.getUserFlights().stream()
+        currentUser.getUserFlights()
                 .forEach(flight -> writer.write(flight.toString()));
     }
 
+    //Cancel user flights valid if:
+    //currentUser is not null
+    //check if there is flights with flight id sent as parameter
+    //check if currentUser have a ticket for the given flight
+    //otherwise, delete the flight from userFlights
     public void CancelFlight(String[] comenzi) {
         int id = Integer.parseInt(comenzi[1]);
+
         if (currentUser == null) {
-            writer.write(Mesaje.getUserNotConnected());
+            writer.write(Messages.getUserNotConnected());
             return;
         }
         Optional<Flights> findFlight = allFlights.stream()
                 .filter(flights -> flights.getId() == id)
                 .findFirst();
         if (findFlight.isEmpty()) {
-            writer.write(Mesaje.getNoSuchFlights(id));
+            writer.write(Messages.getNoSuchFlights(id));
             return;
         }
         boolean ticketMatch = currentUser.getUserFlights().stream()
                 .anyMatch(flight -> flight.getId() == id);
 
         if (!ticketMatch) {
-            writer.write(Mesaje.getDoesntHaveaTicket(currentUser.getEmail(), id));
+            writer.write(Messages.getDoesntHaveaTicket(currentUser.getEmail(), id));
             return;
         }
-        currentUser.deleteFlight(currentUser.getUserFlights());
-        writer.write(Mesaje.getFlightCanceled(currentUser.getEmail(), id));
+
+        currentUser.deleteUserFlight(findFlight.get());
+        writer.write(Messages.getFlightCanceled(currentUser.getEmail(), id));
     }
 
+    //Delete a flight
+    //verify if there is a flight in allFlights matching the flightId sent as parameter,
+    //if so, delete the flight from allFlights
+    //verify if any user has a flight with flightId sent as parameter,
+    //if so, delete the flight from userFlights and notify the user
     public void deleteFlight(String[] comenzi) {
         int flightId = Integer.parseInt(comenzi[1]);
 
         Optional<Flights> verifyFlight = allFlights.stream()
                 .filter(flights -> flights.getId() == flightId)
                 .findFirst();
+
         if (verifyFlight.isEmpty()) {
-            writer.write(Mesaje.getFlightDoesNotExist(flightId));
+            writer.write(Messages.getFlightDoesNotExist(flightId));
             return;
         }
-        Iterator<Flights> it = allFlights.iterator();
-        while (it.hasNext()) {
-            Flights element = it.next();
-            if (element.getId() == flightId) {
-                it.remove();
-                writer.write(Mesaje.getFlightDeleted(flightId));
-            }
-        }
+
+        allFlights.remove(verifyFlight.get());
+        writer.write(Messages.getFlightDeleted(flightId));
+
         for (User user : allUsers) {
             boolean hasATicket = user.getUserFlights().stream()
                     .anyMatch(flights -> flights.getId() == flightId);
             if (hasATicket) {
-                writer.write(Mesaje.getFlightCanceledBecauseWhyNot(flightId, user.getEmail()));
+                writer.write(Messages.getFlightCanceledBecauseWhyNot(flightId, user.getEmail()));
+                user.deleteUserFlight(verifyFlight.get());
             }
-            user.deleteUserFligth(flightId);
         }
-
     }
 
     public void displayFlights(String[] comenzi) {
@@ -221,7 +256,7 @@ public class AirLineManager {
         boolean userExists = allUsers.stream()
                 .anyMatch(user -> user.getEmail().equals(email));
         if(!userExists){
-            writer.write(Mesaje.getUserDoesntExist(email));
+            writer.write(Messages.getUserDoesntExist(email));
             return;
         }
         Iterator<User> iterator = allUsers.iterator();
@@ -229,7 +264,7 @@ public class AirLineManager {
             User user = iterator.next();
             if(user.getEmail().equals(email)){
                 iterator.remove();
-                writer.write(Mesaje.getUserDeleted(email));
+                writer.write(Messages.getUserDeleted(email));
             }
         }
     }
@@ -245,7 +280,7 @@ public class AirLineManager {
                         "' ,'" + user.getPassword() + "')";
                 statement.executeUpdate(insertUser);
             }
-            writer.write(Mesaje.getUserSaved(formattedDate));
+            writer.write(Messages.getUserSaved(formattedDate));
         } catch (SQLException throwables) {
             throwables.printStackTrace();
         }
@@ -261,14 +296,14 @@ public class AirLineManager {
                         " ','" + flights.getTo() + " ','" + flights.getDate() + " ','" + flights.getDuration() + "')";
                 statement.executeUpdate(insertFlight);
             }
-            writer.write(Mesaje.getFlightsSaved(formattedDate));
+            writer.write(Messages.getFlightsSaved(formattedDate));
         } catch (SQLException throwables) {
             throwables.printStackTrace();
         }
     }
 
     public void defaultCommand(String[] comenzi) {
-        writer.write(Mesaje.getWrongCommand());
+        writer.write(Messages.getWrongCommand());
     }
 
     public void closeWriterManager() {
